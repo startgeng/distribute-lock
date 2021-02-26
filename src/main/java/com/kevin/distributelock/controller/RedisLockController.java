@@ -1,5 +1,6 @@
 package com.kevin.distributelock.controller;
 
+import com.kevin.distributelock.util.RedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -35,35 +36,28 @@ public class RedisLockController {
     @RequestMapping
     public String redisLock(){
         log.info("我进入了方法");
-        RedisCallback<Boolean> redisCallback = connection -> {
-            //设置NX
-            RedisStringCommands.SetOption option = RedisStringCommands.SetOption.ifAbsent();
-            //设置过期时间
-            Expiration expiration = Expiration.seconds(30);
-            //序列化key
-            byte[] redisKey = redisTemplate.getKeySerializer().serialize(key);
-            //序列化value
-            byte[] redisValue = redisTemplate.getValueSerializer().serialize(value);
-            return connection.set(redisKey, redisValue, expiration, option);
-        };
-
-        Boolean lock = (Boolean) redisTemplate.execute(redisCallback);
-        if (lock){
+//        RedisCallback<Boolean> redisCallback = connection -> {
+//            //设置NX
+//            RedisStringCommands.SetOption option = RedisStringCommands.SetOption.ifAbsent();
+//            //设置过期时间
+//            Expiration expiration = Expiration.seconds(30);
+//            //序列化key
+//            byte[] redisKey = redisTemplate.getKeySerializer().serialize(key);
+//            //序列化value
+//            byte[] redisValue = redisTemplate.getValueSerializer().serialize(value);
+//            return connection.set(redisKey, redisValue, expiration, option);
+//        };
+//
+//        Boolean lock = (Boolean) redisTemplate.execute(redisCallback);
+        RedisLock redisLock = new RedisLock(redisTemplate,key,value,30);
+        if (redisLock.getLock()){
             log.info("我进入到了锁");
             try {
                 Thread.sleep(15000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }finally {
-                String script ="if redis.call('get', KEYS[1]) == ARGV[1] \n" +
-                        "    then \n" +
-                        "\t    return redis.call('del', KEYS[1]) \n" +
-                        "\telse \n" +
-                        "\t    return 0 \n" +
-                        "end";
-                List<String> list = Arrays.asList(key);
-                RedisScript<Boolean> redisScript = RedisScript.of(script,Boolean.class);
-                Boolean result = (Boolean) redisTemplate.execute(redisScript, list, value);
+                boolean result = redisLock.unLock();
                 log.info("最后的结果是:"+result);
             }
         }
