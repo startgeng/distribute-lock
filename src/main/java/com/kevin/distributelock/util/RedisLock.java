@@ -36,7 +36,7 @@ public class RedisLock implements AutoCloseable{
     //过期时间(秒)
     private int expireTime;
 
-    public RedisLock(RedisTemplate redisTemplate,String key,String value,int expireTime){
+    public RedisLock(RedisTemplate redisTemplate,String key,int expireTime){
         this.redisTemplate = redisTemplate;
         this.key = key;
         this.value = UUID.randomUUID().toString();

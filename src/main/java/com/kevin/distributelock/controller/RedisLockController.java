@@ -43,7 +43,7 @@ public class RedisLockController {
 //
 //        Boolean lock = (Boolean) redisTemplate.execute(redisCallback);
 //        RedisLock redisLock = new RedisLock(redisTemplate,key,value,30);
-        try(RedisLock redisLock = new RedisLock(redisTemplate,key,value,30)){
+        try(RedisLock redisLock = new RedisLock(redisTemplate,key,30)){
             if (redisLock.getLock()){
                 log.info("我进入了锁");
                 try {
