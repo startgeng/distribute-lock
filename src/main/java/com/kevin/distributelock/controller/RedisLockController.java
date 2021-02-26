@@ -3,16 +3,9 @@ package com.kevin.distributelock.controller;
 import com.kevin.distributelock.util.RedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.RedisStringCommands;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -49,19 +42,21 @@ public class RedisLockController {
 //        };
 //
 //        Boolean lock = (Boolean) redisTemplate.execute(redisCallback);
-        RedisLock redisLock = new RedisLock(redisTemplate,key,value,30);
-        if (redisLock.getLock()){
-            log.info("我进入到了锁");
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }finally {
-                boolean result = redisLock.unLock();
-                log.info("最后的结果是:"+result);
+//        RedisLock redisLock = new RedisLock(redisTemplate,key,value,30);
+        try(RedisLock redisLock = new RedisLock(redisTemplate,key,value,30)){
+            if (redisLock.getLock()){
+                log.info("我进入了锁");
+                try {
+                    Thread.sleep(15000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+        }catch (Exception e){
+            throw new IllegalArgumentException("没有拿到锁");
         }
         log.info("方法执行完成");
         return "方法执行完成";
     }
+
 }

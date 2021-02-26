@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,7 +24,8 @@ import java.util.UUID;
 @Data
 @ToString
 @NoArgsConstructor
-public class RedisLock {
+@Slf4j
+public class RedisLock implements AutoCloseable{
 
     //redis的封装
     private RedisTemplate redisTemplate;
@@ -66,6 +68,15 @@ public class RedisLock {
                 "end";
         List<String> list = Arrays.asList(key);
         RedisScript<Boolean> redisScript = RedisScript.of(script,Boolean.class);
-        return (Boolean) redisTemplate.execute(redisScript, list, value);
+
+        Boolean result =  (Boolean) redisTemplate.execute(redisScript, list, value);
+        log.info("释放锁的结果:"+result);
+        return result;
+    }
+
+    //自动关闭的功能
+    @Override
+    public void close() throws Exception {
+        unLock();
     }
 }
