@@ -23,14 +23,14 @@ public class SchedulerService {
     /**
      * 定时任务发送短信
      */
-    @Scheduled(cron = "0/30 * * * * ?")
-    public void sendSms(){
-        try(RedisLock redisLock = new RedisLock(redisTemplate,"autoSms",30)){
-            if (redisLock.getLock()){
-                log.info("正在向138XXXXXX发送短信");
-            }
-        }catch (Exception e){
-            throw new IllegalArgumentException("出现分布式锁异常");
-        }
-    }
+//    @Scheduled(cron = "0/30 * * * * ?")
+//    public void sendSms(){
+//        try(RedisLock redisLock = new RedisLock(redisTemplate,"autoSms",30)){
+//            if (redisLock.getLock()){
+//                log.info("正在向138XXXXXX发送短信");
+//            }
+//        }catch (Exception e){
+//            throw new IllegalArgumentException("出现分布式锁异常");
+//        }
+//    }
 }
